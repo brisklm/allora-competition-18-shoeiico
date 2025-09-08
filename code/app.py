@@ -61,27 +61,15 @@ TOOLS = [
     {
         "name": "write_code",
         "description": "Writes complete source code to a specified file, overwriting existing content.",
-        "parameters": {
-            "file": "string",
-            "code": "string"
-        }
+        "parameters": {"file": "string", "code": "string"}
     }
 ]
-
-@app.route('/optimize', methods=['POST'])
-def optimize():
-    # Placeholder for Optuna optimization
-    from model import run_optuna_tuning
-    results = run_optuna_tuning()
-    return jsonify(sanitize_for_json(results))
 
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
-    # Placeholder for prediction
-    from model import make_prediction
-    prediction = make_prediction(data)
-    return jsonify(sanitize_for_json(prediction))
+    # Placeholder for prediction logic
+    return jsonify({'prediction': 0.0})
 
 if __name__ == '__main__':
-    app.run(port=FLASK_PORT, debug=True)
+    app.run(port=FLASK_PORT)
