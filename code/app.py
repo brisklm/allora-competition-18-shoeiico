@@ -6,11 +6,9 @@ from dotenv import load_dotenv
 import numpy as np
 import math
 
-# Initialize app and env
 app = Flask(__name__)
 load_dotenv()
 
-# Dynamic version tag for visibility in logs
 COMPETITION = os.getenv("COMPETITION", "competition18")
 TOPIC_ID = os.getenv("TOPIC_ID", "64")
 TOKEN = os.getenv("TOKEN", "BTC")
@@ -19,10 +17,6 @@ MCP_VERSION = f"{datetime.utcnow().date()}-{COMPETITION}-topic{TOPIC_ID}-app-{TO
 FLASK_PORT = int(os.getenv("FLASK_PORT", 9001))
 
 def sanitize_for_json(obj):
-    """
-    Recursively sanitize an object to ensure it's JSON serializable.
-    Replaces NaN, inf, -inf with None or appropriate values.
-    """
     if isinstance(obj, dict):
         return {key: sanitize_for_json(value) for key, value in obj.items()}
     elif isinstance(obj, list):
@@ -45,13 +39,11 @@ def sanitize_for_json(obj):
             return 1e9 if obj > 0 else -1e9
         else:
             return float(obj)
-    elif hasattr(obj, 'item'):  # numpy scalars
+    elif hasattr(obj, 'item'):
         return sanitize_for_json(obj.item())
     else:
-        # For any other type, try to convert to string
         return str(obj)
 
-# MCP Tools
 TOOLS = [
     {
         "name": "optimize",
@@ -61,21 +53,36 @@ TOOLS = [
     {
         "name": "write_code",
         "description": "Writes complete source code to a specified file, overwriting existing content.",
-        "parameters": {"file": "string", "code": "string"}
+        "parameters": {
+            "file_name": "str",
+            "content": "str"
+        }
     }
 ]
 
-@app.route('/predict', methods=['GET'])
-def predict_endpoint():
-    from model import predict
-    pred = predict()
-    return jsonify({'prediction': pred})
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.json
+    if data is None:
+        return jsonify({"error": "No JSON data provided"}), 400
+
+    try:
+        from model import predict_log_return
+        prediction = predict_log_return(data)
+        sanitized_prediction = sanitize_for_json(prediction)
+        return jsonify(sanitized_prediction)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/optimize', methods=['POST'])
-def optimize_endpoint():
-    from model import train_model
-    train_model(tune=True)
-    return jsonify({'status': 'optimized'})
+def optimize():
+    try:
+        from model import optimize_model
+        result = optimize_model()
+        sanitized_result = sanitize_for_json(result)
+        return jsonify(sanitized_result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=FLASK_PORT)
+    app.run(host='0.0.0.0', port=FLASK_PORT)
