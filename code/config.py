@@ -33,15 +33,5 @@ HELIUS_API_KEY = os.getenv('HELIUS_API_KEY', '70ed65ce-4750-4fd5-83bd-5aee9aa79e
 HELIUS_RPC_URL = os.getenv('HELIUS_RPC_URL', 'https://mainnet.helius-rpc.com')
 BITQUERY_API_KEY = os.getenv('BITQUERY_API_KEY', 'ory_at_LmFLzUutMY8EVb-P_PQVP9ntfwUVTV05LMal7xUqb2I.vxFLfMEoLGcu4XoVi47j-E2bspraTSrmYzCt1A4y2k')
 # Feature set adapted to BTC/USD 8h log-return prediction (Competition 18)
-# Keep only features that our pipeline can handle, add engineered features
-FEATURES = [
-    'log_return_lag1', 'log_return_lag2', 'sign_previous', 'momentum_5', 'momentum_10',
-    'btc_volume', 'eth_log_return', 'sol_log_return', 'vader_sentiment'  # Added VADER if available
-]
-# Hyperparameters for optimization
-HYPERPARAMS = {
-    'max_depth': 10,
-    'num_leaves': 31,
-    'reg_alpha': 0.1,
-    'reg_lambda': 0.1
-}
+# Keep only features that our pipeline can handle, add log-return lags and momentum
+FEATURES = ['log_return_lag1', 'log_return_lag2', 'momentum_8h', 'vader_sentiment_score']
