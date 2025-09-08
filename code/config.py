@@ -33,24 +33,15 @@ HELIUS_API_KEY = os.getenv('HELIUS_API_KEY', '70ed65ce-4750-4fd5-83bd-5aee9aa79e
 HELIUS_RPC_URL = os.getenv('HELIUS_RPC_URL', 'https://mainnet.helius-rpc.com')
 BITQUERY_API_KEY = os.getenv('BITQUERY_API_KEY', 'ory_at_LmFLzUutMY8EVb-P_PQVP9ntfwUVTV05LMal7xUqb2I.vxFLfMEoLGcu4XoVi47j-E2bspraTSrmYzCt1A4y2k')
 # Feature set adapted to BTC/USD 8h log-return prediction (Competition 18)
-# Keep only features that our pipeline can handle
+# Keep only features that our pipeline can handle, add engineered features
 FEATURES = [
-    'open', 'high', 'low', 'close', 'volume',
-    'log_return', 'log_return_lag1', 'log_return_lag2', 'log_return_lag3',
-    'sign_log_return', 'momentum_8h', 'rsi_14', 'macd',
-    'vader_sentiment_compound'  # Added VADER sentiment
+    'log_return_lag1', 'log_return_lag2', 'sign_previous', 'momentum_5', 'momentum_10',
+    'btc_volume', 'eth_log_return', 'sol_log_return', 'vader_sentiment'  # Added VADER if available
 ]
-# Model parameters for optimization
-MODEL_PARAMS = {
-    'lstm_units': 50,
-    'dropout': 0.2,
-    'epochs': 100,
-    'batch_size': 32,
-    # For hybrid, perhaps LightGBM params
-    'max_depth': 5,  # Adjusted
-    'num_leaves': 31,  # Adjusted
-    'reg_alpha': 0.1,  # Added regularization
+# Hyperparameters for optimization
+HYPERPARAMS = {
+    'max_depth': 10,
+    'num_leaves': 31,
+    'reg_alpha': 0.1,
     'reg_lambda': 0.1
 }
-# Add ensembling option
-ENSEMBLE_MODELS = ['LSTM', 'LightGBM', 'Prophet']  # Example
