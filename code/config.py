@@ -38,7 +38,7 @@ PERFORMANCE_THRESHOLDS = {'RMSE': {'excellent': 0.01, 'good': 0.015, 'acceptable
 
 def evaluate_performance(rmse, mztae, directional_acc=None, correlation=None):
     """
-    Evaluate model performance against thresholds.
+    Evaluate model performance against Competition 18 thresholds.
     Returns a performance rating and detailed assessment.
     """
     performance = {'overall': 'poor', 'details': {}}
@@ -69,7 +69,7 @@ def evaluate_performance(rmse, mztae, directional_acc=None, correlation=None):
             performance['details']['directional_accuracy'] = 'acceptable'
         else:
             performance['details']['directional_accuracy'] = 'poor'
-    if correlation is not None:
+    if correlation is not None and correlation != 0.0:
         if correlation >= PERFORMANCE_THRESHOLDS['correlation']['excellent']:
             performance['details']['correlation'] = 'excellent'
         elif correlation >= PERFORMANCE_THRESHOLDS['correlation']['good']:
@@ -78,10 +78,21 @@ def evaluate_performance(rmse, mztae, directional_acc=None, correlation=None):
             performance['details']['correlation'] = 'acceptable'
         else:
             performance['details']['correlation'] = 'poor'
-    ratings = list(performance['details'].values())
-    if all((r in ['excellent', 'good'] for r in ratings)):
-        performance['overall'] = 'excellent' if 'excellent' in ratings else 'good'
-    elif all((r in ['excellent', 'good', 'target_met', 'acceptable'] for r in ratings)):
+    else:
+        performance['details']['correlation'] = 'neutral'
+    core_metrics = ['rmse', 'mztae']
+    if directional_acc is not None:
+        core_metrics.append('directional_accuracy')
+    core_ratings = [performance['details'][metric] for metric in core_metrics]
+    meets_competition_thresholds = meets_current_thresholds(rmse, mztae, directional_acc)
+    if meets_competition_thresholds:
+        if all((r in ['excellent', 'good'] for r in core_ratings)):
+            performance['overall'] = 'excellent' if 'excellent' in core_ratings else 'good'
+        elif all((r in ['excellent', 'good', 'target_met'] for r in core_ratings)):
+            performance['overall'] = 'good'
+        else:
+            performance['overall'] = 'acceptable'
+    elif all((r in ['excellent', 'good', 'target_met', 'acceptable'] for r in core_ratings)):
         performance['overall'] = 'acceptable'
     else:
         performance['overall'] = 'poor'
