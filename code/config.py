@@ -30,11 +30,11 @@ CG_API_KEY = os.getenv('CG_API_KEY', 'CG-xA5NyokGEVbc4bwrvJPcpZvT')
 HELIUS_API_KEY = os.getenv('HELIUS_API_KEY', '70ed65ce-4750-4fd5-83bd-5aee9aa79ead')
 HELIUS_RPC_URL = os.getenv('HELIUS_RPC_URL', 'https://mainnet.helius-rpc.com')
 BITQUERY_API_KEY = os.getenv('BITQUERY_API_KEY', 'ory_at_LmFLzUutMY8EVb-P_PQVP9ntfwUVTV05LMal7xUqb2I.vxFLfMEoLGcu4XoVi47j-E2bspraTSrmYzCt1A4y2k')
-SELECTED_FEATURES = ['volatility_BTCUSDT', 'volume_change_BTCUSDT', 'momentum_BTCUSDT', 'rsi_BTCUSDT', 'ma5_BTCUSDT', 'ma20_BTCUSDT', 'macd_BTCUSDT', 'bb_upper_BTCUSDT', 'bb_lower_BTCUSDT', 'sign_log_return_lag1_BTCUSDT', 'garch_vol_BTCUSDT', 'volatility_ETHUSDT', 'volume_change_ETHUSDT', 'sol_btc_corr', 'sol_eth_corr', 'sol_btc_vol_ratio', 'sol_btc_volume_ratio', 'sol_eth_vol_ratio', 'sol_eth_momentum_ratio', 'sentiment_score', 'sol_tx_volume', 'hour_of_day', *[f'open_ETHUSDT_lag{i}' for i in range(1, 11)], *[f'high_ETHUSDT_lag{i}' for i in range(1, 11)], *[f'low_ETHUSDT_lag{i}' for i in range(1, 11)], *[f'close_ETHUSDT_lag{i}' for i in range(1, 11)], *[f'open_BTCUSDT_lag{i}' for i in range(1, 11)], *[f'high_BTCUSDT_lag{i}' for i in range(1, 11)], *[f'low_BTCUSDT_lag{i}' for i in range(1, 11)], *[f'close_BTCUSDT_lag{i}' for i in range(1, 11)]]
-MODEL_PARAMS = {'n_estimators': 1000, 'learning_rate': 0.015, 'num_leaves': 31, 'max_depth': 6, 'min_child_samples': 50, 'subsample': 0.8, 'colsample_bytree': 0.8, 'reg_lambda': 2.0, 'reg_alpha': 0.5, 'min_gain_to_split': 0.01, 'n_jobs': 1, 'hidden_size': 64, 'num_layers': 2}
+SELECTED_FEATURES = ['sign_log_return_lag1_BTCUSDT', 'momentum_BTCUSDT', 'rsi_BTCUSDT', 'momentum_1_BTCUSDT', 'momentum_2_BTCUSDT', 'momentum_5_BTCUSDT', 'vol_regime_BTCUSDT', 'trend_regime_BTCUSDT', 'mean_reversion_regime_BTCUSDT', 'range_regime_BTCUSDT', 'gap_regime_BTCUSDT', 'correlation_regime', 'volatility_BTCUSDT', 'volatility_ETHUSDT', 'vol_adj_return_BTCUSDT', 'direction_persistence_BTCUSDT', 'momentum_accel_BTCUSDT', 'close_BTCUSDT_lag1', 'close_ETHUSDT_lag1', 'rsi_divergence_BTCUSDT', 'resistance_distance_BTCUSDT', 'support_distance_BTCUSDT', 'near_support_BTCUSDT', 'near_resistance_BTCUSDT', 'hour_of_day']
+MODEL_PARAMS = {'n_estimators': 800, 'learning_rate': 0.006, 'num_leaves': 15, 'max_depth': 4, 'min_child_samples': 150, 'subsample': 0.7, 'colsample_bytree': 0.7, 'reg_lambda': 8.0, 'reg_alpha': 3.0, 'min_gain_to_split': 0.05, 'feature_fraction': 0.8, 'bagging_freq': 5, 'n_jobs': 1, 'n_neighbors': 7, 'weights': 'distance', 'p': 1, 'hidden_size': 64, 'num_layers': 2, 'gamma': 0.05, 'min_child_weight': 8, 'iterations': 1200, 'depth': 5, 'l2_leaf_reg': 12.0, 'random_strength': 1.2, 'bagging_temperature': 0.7, 'border_count': 64}
 OPTUNA_TRIALS = int(os.getenv('OPTUNA_TRIALS', 50))
 USE_SYNTHETIC_DATA = os.getenv('USE_SYNTHETIC_DATA', 'True').lower() == 'true'
-PERFORMANCE_THRESHOLDS = {'RMSE': {'excellent': 0.015, 'good': 0.025, 'acceptable': 0.04, 'current': 0.025}, 'MZTAE': {'excellent': 0.5, 'good': 0.75, 'acceptable': 1.0, 'current': 0.75}, 'directional_accuracy': {'excellent': 0.65, 'good': 0.55, 'target': 0.51, 'acceptable': 0.52, 'minimum': 0.5}, 'correlation': {'excellent': 0.5, 'good': 0.3, 'acceptable': 0.2, 'minimum': 0.1}}
+PERFORMANCE_THRESHOLDS = {'RMSE': {'excellent': 0.01, 'good': 0.015, 'acceptable': 0.025, 'current': 0.015}, 'MZTAE': {'excellent': 0.3, 'good': 0.5, 'acceptable': 0.75, 'current': 0.5}, 'directional_accuracy': {'excellent': 0.7, 'good': 0.65, 'target': 0.6, 'acceptable': 0.55, 'minimum': 0.5}, 'correlation': {'excellent': 0.5, 'good': 0.3, 'acceptable': 0.2, 'minimum': 0.1}}
 
 def evaluate_performance(rmse, mztae, directional_acc=None, correlation=None):
     """
@@ -96,7 +96,7 @@ def meets_current_thresholds(rmse, mztae, directional_acc=None):
     mztae_ok = mztae <= PERFORMANCE_THRESHOLDS['MZTAE']['current']
     da_ok = True
     if directional_acc is not None:
-        da_ok = directional_acc > PERFORMANCE_THRESHOLDS['directional_accuracy']['target']
+        da_ok = directional_acc >= PERFORMANCE_THRESHOLDS['directional_accuracy']['target']
     return rmse_ok and mztae_ok and da_ok
 
 def get_performance_summary(rmse, mztae, directional_acc=None, correlation=None):
@@ -114,7 +114,7 @@ def get_performance_summary(rmse, mztae, directional_acc=None, correlation=None)
         da_status = evaluation['details'].get('directional_accuracy', 'N/A')
         da_display = da_status.replace('_', ' ').upper() if da_status != 'N/A' else 'N/A'
         target_threshold = PERFORMANCE_THRESHOLDS['directional_accuracy']['target']
-        summary.append(f'Directional Accuracy: {directional_acc:.2%} (Target: >{target_threshold:.2%}) - {da_display}')
+        summary.append(f'Directional Accuracy: {directional_acc:.2%} (Target: ≥{target_threshold:.2%}) - {da_display}')
     if correlation is not None:
         summary.append(f"Correlation: {correlation:.4f} - {evaluation['details'].get('correlation', 'N/A').upper()}")
     summary.append(f"{'=' * 50}")
